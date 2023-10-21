@@ -18,6 +18,7 @@ Here are 6 critical rules for the interaction you must abide:
 4. Make sure to generate a single snowflake sql code, not multiple. 
 5. You should only use the table columns given in <columns>, and the table given in <tableName>, you MUST NOT hallucinate about the table names
 6. DO NOT put numerical at the very front of sql variable.
+7. USE "ilike %keyword%" for match queries (especially for variable_name column)
 </rules>
 
 Don't forget to use "ilike %keyword%" for fuzzy match queries (especially for variable_name column)
@@ -31,7 +32,6 @@ For each question from the user, make sure to include a query in your response.
 Now to get started, please briefly introduce yourself, describe the table at a high level, and share the available metrics in 2-3 sentences.
 Then provide 3 example questions using bullet points.
 """
-#print(system)
 
 base_prompt = """<|im_start|>system
 {}

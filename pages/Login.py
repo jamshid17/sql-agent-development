@@ -1,27 +1,38 @@
 import streamlit_authenticator as stauth
 import streamlit as st
-import yaml
+import yaml, time
 from yaml.loader import SafeLoader
 from working_with_db.db_functions import user_login
+from helpers import get_manager
 
 
+cookie_manager = get_manager()
+time.sleep(0.1)
 
-if st.session_state.user_id:
-    st.info("You logged in!") 
+user_id = cookie_manager.get('user_id')
+if user_id:
+    st.info("You are logged in!") 
+    logout_button = st.button("Log Out")
+
+    if logout_button:
+        cookie_manager.delete("user_id")
+    
 else:
     with st.form("Login"):
         st.text_input("Username", key="login_username")
-        st.text_input("Password", key="login_password")
+        st.text_input("Password", key="login_password", type="password")
         # st.text_input("Query for prompt", key="query_for_prompt", value="Which financial institutions in California had the highest total assets value between 2010 to 2015?")
         login_button = st.form_submit_button("Login")
 
 
     if login_button:
-        if not st.session_state.user_id:
+        if not user_id:
             login_result = user_login(st.session_state["login_username"], st.session_state["login_password"])
+
             if login_result:
                 user_id = login_result[0]
-                st.session_state.user_id = user_id
+                cookie_manager.set(cookie="user_id", val=user_id)
+                # st.rerun()
                 st.info("Logged In!")
             else:
                 st.warning("User not found!")

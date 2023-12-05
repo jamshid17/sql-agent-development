@@ -3,7 +3,7 @@ import streamlit as st
 import yaml, time
 from yaml.loader import SafeLoader
 from working_with_db.db_functions import user_login
-from helpers import get_manager
+from helpers import get_manager, verify_password
 
 
 cookie_manager = get_manager()
@@ -27,13 +27,23 @@ else:
 
     if login_button:
         if not user_id:
-            login_result = user_login(st.session_state["login_username"], st.session_state["login_password"])
+            entered_username = st.session_state["login_username"]
+            entered_password = st.session_state["login_password"]
+            # print(entered_password, " et pas")
+            
+            login_result = user_login(st.session_state["login_username"])
 
             if login_result:
                 user_id = login_result[0]
-                cookie_manager.set(cookie="user_id", val=user_id)
-                # st.rerun()
-                st.info("Logged In!")
+                password = login_result[2]
+                print(password, " pas")
+                print(entered_password, " et pas")
+
+                if verify_password(password, entered_password):             
+                    cookie_manager.set(cookie="user_id", val=user_id)
+                    st.info("Logged In!")
+                else:
+                    st.warning("Password is incorrect!")
             else:
                 st.warning("User not found!")
 

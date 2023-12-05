@@ -3,6 +3,8 @@ import pandas as pd
 from helpers import (
     check_prompt_inputs,
     get_manager,
+    make_add_new_table_button_state_true,
+    cancel_add_new_table_button_state
 )
 from conf import system_prompt, base_prompt
 import openai
@@ -23,7 +25,7 @@ time.sleep(0.1)
 
 if user_id:
     results = get_table_inputs_values(user_id)
-    # st.write(results)
+    st.header("Your Snowflake Tables!")
     for result in results:
         table_input_id = result[0]
         with st.form(f"table_form_{table_input_id}"):
@@ -36,9 +38,9 @@ if user_id:
             st.text_area(
                 "TABLE_DESCRIPTION", key=table_description_key, value=result[4]
             )
-            update_table_inputs_button = st.form_submit_button("update")
+            update_table_inputs_button = st.form_submit_button("Save")
             delete_table_inputs_button = st.form_submit_button(
-                "delete",
+                "Delete",
                 on_click=delete_input,
                 args=["tableinputs", "id", table_input_id],
             )
@@ -49,23 +51,40 @@ if user_id:
                 meta_data=st.session_state[metadata_query_key],
                 table_description=st.session_state[table_description_key],
             )
+    # adding new table inputs
+    if "add_table_button_state" not in st.session_state:
+        st.session_state["add_table_button_state"] = False
+    if "disable_add_table_button" not in st.session_state:
+        st.session_state["disable_add_table_button"] = False
 
+    add_table_button = st.button(
+        label="Add new table input",
+        key="add_table_input",
+        on_click=make_add_new_table_button_state_true,
+        disabled=st.session_state.disable_add_table_button,
+    )
 
-    with st.form("create_new_table_form", clear_on_submit=True):
-        st.text_input("TABLE NAME", key="new_table_input")
-        st.text_input("METADATA_QUERY", key="new_metadata_query")
-        st.text_area("TABLE_DESCRIPTION", key="new_table_description")
-        st.write(st.session_state.new_table_input)
-        create_button = st.form_submit_button("create")
+    if add_table_button or st.session_state.add_table_button_state:
+        with st.form("create_new_table_form", clear_on_submit=True):
+            st.header("Add new table")
+            st.text_input("TABLE NAME", key="new_table_input")
+            st.text_input("METADATA_QUERY", key="new_metadata_query")
+            st.text_area("TABLE_DESCRIPTION", key="new_table_description")
+            create_table_inputs_button = st.form_submit_button("Add")
+            cancel_create_table_inputs_button = st.form_submit_button("Cancel", on_click=cancel_add_new_table_button_state)
 
-    if create_button:
-        create_table_inputs_input(
-            user_id,
-            st.session_state["new_table_input"],
-            st.session_state["new_table_description"],
-            st.session_state["new_metadata_query"],
-        )
-        st.rerun()
+        if create_table_inputs_button:
+            st.write(st.session_state.new_table_input)
+            create_table_inputs_input(
+                user_id,
+                st.session_state["new_table_input"],
+                st.session_state["new_table_description"],
+                st.session_state["new_metadata_query"],
+            )
+            st.session_state.add_table_button_state = False
+            cancel_add_new_table_button_state()
+            st.rerun()
+
 else:
     st.warning("You need to login first!")
 

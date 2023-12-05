@@ -97,7 +97,7 @@ if user_id:
                 credential_values=credential_values        
             )
             del st.session_state["create credentials button"]
-            st.rerun()            
+            # st.rerun()            
 
 else:
     st.warning('You need to login first!')

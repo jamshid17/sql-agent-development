@@ -2,7 +2,7 @@ create_users_table_table_query = """
 CREATE TABLE Users(
     user_id SERIAL PRIMARY KEY,
     username VARCHAR (50) UNIQUE NOT NULL,
-    password VARCHAR (50) NOT NULL
+    password VARCHAR (60) NOT NULL
 );
 """
 create_table_inputs_table_query = """
@@ -32,7 +32,7 @@ CREATE TABLE SnowflakeCredentials(
 select_user_login_query = """
 SELECT user_id, username, password 
 FROM users 
-WHERE username = '{}' AND password = '{}';
+WHERE username = '{}';
 """
 
 select_snowflake_credentials_values_query = """
@@ -52,7 +52,7 @@ DELETE FROM {} WHERE {} = {}
 """
 
 
-#Table inputs queries
+# Table inputs queries
 update_table_inputs_query = """
 UPDATE tableinputs
 SET table_name = '{table_name}', table_description = '{table_description}', meta_data = '{meta_data}'
@@ -61,7 +61,7 @@ WHERE id = {table_id};
 
 create_table_inputs_query = """
 INSERT INTO tableinputs (user_id, table_name, table_description, meta_data) 
-VALUES ({user_id}, {table_name}, {table_description}, {meta_data})
+VALUES ({user_id}, '{table_name}', '{table_description}', '{meta_data}')
 """
 
 
@@ -74,6 +74,15 @@ WHERE id = {credentials_id};
 """
 
 create_snowflake_credentials_query = """
-INSERT INTO SnowflakeCredentials (username, password, azure_account, warehouse, database, schema, role) 
-VALUES ({username}, {password}, {azure_account}, {warehouse}, {database}, {schema}, {role})
+INSERT INTO SnowflakeCredentials (user_id, username, password, azure_account, warehouse, database, schema, role) 
+VALUES ({user_id}, {username}, {password}, {azure_account}, {warehouse}, {database}, {schema}, {role})
 """
+
+
+update_user_password_query = """
+UPDATE users
+SET password = '{hashed_password}'
+WHERE user_id = {user_id};
+"""
+
+

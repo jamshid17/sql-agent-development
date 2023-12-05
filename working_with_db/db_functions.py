@@ -9,8 +9,10 @@ from .config import (
     create_table_inputs_query,
     update_snowflake_credentials_query,
     create_snowflake_credentials_query,
+    update_user_password_query,
 )
 import streamlit as st
+
 
 
 def insert_table_values(
@@ -37,9 +39,9 @@ def insert_credential_values(
 
 
 @st.cache_data
-def user_login(username, password):
+def user_login(username):
     connection, cursor = connect_with_db()
-    cursor.execute(select_user_login_query.format(username, password))
+    cursor.execute(select_user_login_query.format(username))
     login_result = cursor.fetchone()
     commit_and_close_connection(connection, cursor)
     return login_result
@@ -70,11 +72,11 @@ def delete_input(table_name, id_field_name, input_id):
 def update_table_inputs_input(table_id, table_name, meta_data, table_description):
     connection, cursor = connect_with_db()
     query = update_table_inputs_query.format(
-            table_id=table_id,
-            table_name=table_name,
-            table_description=table_description,
-            meta_data=meta_data,
-        )
+        table_id=table_id,
+        table_name=table_name,
+        table_description=table_description,
+        meta_data=meta_data,
+    )
     print(query, " query ")
     cursor.execute(
         update_table_inputs_query.format(
@@ -100,9 +102,7 @@ def create_table_inputs_input(user_id, table_name, table_description, meta_data)
     commit_and_close_connection(connection, cursor)
 
 
-def update_snowflake_credentials_input(
-    credentials_id, credential_values
-):
+def update_snowflake_credentials_input(credentials_id, credential_values):
     connection, cursor = connect_with_db()
     cursor.execute(
         update_snowflake_credentials_query.format(
@@ -119,16 +119,33 @@ def update_snowflake_credentials_input(
     commit_and_close_connection(connection, cursor)
 
 
-def create_snowflake_credentials_input(
-    user_id, table_name, table_description, meta_data
-):
+# def create_snowflake_credentials_input(user_id, credential_values):
+#     connection, cursor = connect_with_db()
+#     cursor.execute(
+#         create_snowflake_credentials_query.format(
+#             user_id=user_id,
+#             username=credential_values["username"],
+#             password=credential_values["password"],
+#             azure_account=credential_values["azure_account"],
+#             warehouse=credential_values["warehouse"],
+#             database=credential_values["database"],
+#             schema=credential_values["schema"],
+#             role=credential_values["role"],
+#         )
+#     )
+#     commit_and_close_connection(connection, cursor)
+
+
+def update_user_login(user_id, hashed_password):
     connection, cursor = connect_with_db()
+    cursor.execute("""
+    ALTER TABLE Users
+    ALTER COLUMN password TYPE VARCHAR(60);
+""")
     cursor.execute(
-        create_table_inputs_query.format(
+        update_user_password_query.format(
             user_id=user_id,
-            table_name=table_name,
-            table_description=table_description,
-            meta_data=meta_data,
+            hashed_password=hashed_password,
         )
     )
     commit_and_close_connection(connection, cursor)
